@@ -1,5 +1,5 @@
 ### This repository contains code for reproducing the analyses from the manuscript:
-# "Genomic patterns in the *Phylloscopus* leaf warblers of northern Melanesia reveal that gene flow can positively mislead phylogeny and our understanding of the speciation process". 
+# Genomic patterns in the *Phylloscopus* leaf warblers of northern Melanesia reveal that gene flow can positively mislead phylogeny and our understanding of the speciation process
 
 * **Corresponding author**: Devon A. DeRaad (devonderaad@gmail.com)
 
