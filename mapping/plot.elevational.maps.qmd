@@ -1,0 +1,122 @@
+---
+title: "plot elevational maps for *Phylloscopus*"
+format: html
+toc: true
+toc-title: Document Contents
+number-sections: true
+embed-resources: true
+---
+
+```{r}
+library(raster)
+# Load ETOPO1 data (ice)
+# I got these data by using the 'Grid Extract' tool on this website (https://www.ncei.noaa.gov/maps/grid-extract/). For each grid plotted here I chose the option: 'Ice Surface; 15 Arcseconds'.
+#try all of Northern Melanesia
+etopo.i <- raster("~/Downloads/nmel.ice.15acrsecs.tiff")
+# Plot ETOPO1 ice
+colfunc <- colorRampPalette(c("black", "white"))
+plot(etopo.i, col=colfunc(1000))
+
+# Colour palette
+# Plot
+plot(etopo.i, col=c("Light Sky Blue 1","grey25","#00A600","#47BE00","#63C600","#80CE00","#A0D600", "#C2DE00","#E6E600","#E7D01A","#E8C034","#EAB64E","#EBB169","#EDB283"), breaks=c(-9000,-130,seq(0,4000, by = 4000/12)))
+```
+
+```{r}
+# Colour palette
+# Plot blank map
+plot(etopo.i, col=c("Light Sky Blue 1","#00A600"), breaks=c(-9000,0,4100))
+# save
+pdf("~/Desktop/phyllo.wgs/blank.map.pdf", width = 6, height=4.37)
+plot(etopo.i, col=c("Light Sky Blue 1","#00A600"), breaks=c(-9000,0,4100))
+dev.off()
+
+# Plot distribution on New Guinea (1400-2400m)
+plot(etopo.i, col=c("Light Sky Blue 1","#00A600","grey20","#00A600"), breaks=c(-9000,0,1400,2400,4100))
+# save
+pdf("~/Desktop/phyllo.wgs/ng.map.pdf", width = 6, height=4.37)
+plot(etopo.i, col=c("Light Sky Blue 1","#00A600","grey20","#00A600"), breaks=c(-9000,0,1400,2400,4100))
+dev.off()
+
+# Plot distribution on New Britain (above 1100m)
+plot(etopo.i, col=c("Light Sky Blue 1","#00A600","grey20"), breaks=c(-9000,0,1100,4100))
+# save
+pdf("~/Desktop/phyllo.wgs/NB.map.pdf", width = 6, height=4.37)
+plot(etopo.i, col=c("Light Sky Blue 1","#00A600","grey20"), breaks=c(-9000,0,1100,4100))
+dev.off()
+
+
+# Plot distribution on New Ireland (above 840m)
+plot(etopo.i, col=c("Light Sky Blue 1","#00A600","grey20"), breaks=c(-9000,0,840,4100))
+# save
+pdf("~/Desktop/phyllo.wgs/NI.map.pdf", width = 6, height=4.37)
+plot(etopo.i, col=c("Light Sky Blue 1","#00A600","grey20"), breaks=c(-9000,0,840,4100))
+dev.off()
+
+# Plot distribution on Mussau (above 0m)
+plot(etopo.i, col=c("Light Sky Blue 1","grey20"), breaks=c(-9000,0,4100))
+# save
+pdf("~/Desktop/phyllo.wgs/mussau.map.pdf", width = 6, height=4.37)
+plot(etopo.i, col=c("Light Sky Blue 1","grey20"), breaks=c(-9000,0,4100))
+dev.off()
+
+# Plot distribution on Makira (above 500m)
+plot(etopo.i, col=c("Light Sky Blue 1","#00A600","grey20"), breaks=c(-9000,0,500,4100))
+# save
+pdf("~/Desktop/phyllo.wgs/makira.map.pdf", width = 6, height=4.37)
+plot(etopo.i, col=c("Light Sky Blue 1","#00A600","grey20"), breaks=c(-9000,0,500,4100))
+dev.off()
+
+# Plot distribution on Bougainville (above 700m)
+plot(etopo.i, col=c("Light Sky Blue 1","#00A600","grey20"), breaks=c(-9000,0,700,4100))
+# save
+pdf("~/Desktop/phyllo.wgs/bougainville.map.pdf", width = 6, height=4.37)
+plot(etopo.i, col=c("Light Sky Blue 1","#00A600","grey20"), breaks=c(-9000,0,700,4100))
+dev.off()
+
+# Plot distribution on Kolombangara (above 1200m)
+plot(etopo.i, col=c("Light Sky Blue 1","#00A600","grey20"), breaks=c(-9000,0,1200,4100))
+# save
+pdf("~/Desktop/phyllo.wgs/kolo.map.pdf", width = 6, height=4.37)
+plot(etopo.i, col=c("Light Sky Blue 1","#00A600","grey20"), breaks=c(-9000,0,1200,4100))
+dev.off()
+
+# Plot general distribution for islands with no specific info (above 750m)
+plot(etopo.i, col=c("Light Sky Blue 1","#00A600","grey20"), breaks=c(-9000,0,750,4100))
+# save
+pdf("~/Desktop/phyllo.wgs/general.phyllo.map.pdf", width = 6, height=4.37)
+plot(etopo.i, col=c("Light Sky Blue 1","#00A600","grey20"), breaks=c(-9000,0,750,4100))
+dev.off()
+
+```
+
+```{r}
+# Load ETOPO1 data (ice)
+etopo.b <- raster("~/Downloads/exportImage.ice.tiff")
+# Plot ETOPO1 ice
+colfunc <- colorRampPalette(c("black", "white"))
+plot(etopo.b, col=colfunc(1000))
+# Colour palette
+# Plot
+plot(etopo.b, col=c("Light Sky Blue 1","#00A600","grey20"), breaks=c(-4500,0,1200,1740))
+
+#plot zoomed in kolo
+plot(etopo.b, col=c("Light Sky Blue 1","#00A600","#47BE00","#63C600","#80CE00","#A0D600", "#C2DE00","#E6E600","#E7D01A","#E8C034","#EAB64E","#EBB169","#EDB283"), breaks=c(-850,seq(0,1700, by = 1700/12)), xlim=c(156.9,157.23),ylim=c(-8.16,-7.82))
+# save
+pdf("~/Desktop/phyllo.wgs/kolo.zoomed.map.pdf", width = 4, height=4)
+plot(etopo.b, col=c("Light Sky Blue 1","#00A600","#47BE00","#63C600","#80CE00","#A0D600", "#C2DE00","#E6E600","#E7D01A","#E8C034","#EAB64E","#EBB169","#EDB283"), breaks=c(-850,seq(0,1700, by = 1700/12)), xlim=c(156.9,157.23),ylim=c(-8.16,-7.82))
+dev.off()
+
+#plot rough outline of sympatric area
+plot(etopo.b, col=c("Light Sky Blue 1","#00A600","#47BE00","#63C600","#80CE00","#A0D600", "#C2DE00","#E6E600","black","#E7D01A","#E8C034","#EAB64E","#EBB169","#EDB283"),
+     breaks=c(-850,0,141.66,283.3,425,566.6,708.3,850,950,1050,1275,1416.6,1558.3,1700),
+     xlim=c(156.9,157.23),ylim=c(-8.16,-7.82))
+
+#plot rough outline of sympatric area
+plot(etopo.b, col=c("Light Sky Blue 1","#00A600","black"),
+     breaks=c(-850,0,1200,1700),
+     xlim=c(156.9,157.23),ylim=c(-8.16,-7.82))
+
+
+```
+
