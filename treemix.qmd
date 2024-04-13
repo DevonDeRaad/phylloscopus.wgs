@@ -1,0 +1,97 @@
+---
+title: "phyllo.treemix"
+format: html
+toc: true
+toc-title: Document Contents
+number-sections: true
+embed-resources: true
+---
+
+
+### First, use the following bash script to convert the unlinked SNP dataset into treemix format and run treemix with 0,1,2, and 3 gene flow edges
+```{bash, eval=FALSE}
+#!/bin/sh
+#
+#SBATCH --job-name=treemix              # Job Name
+#SBATCH --nodes=1             # 40 nodes
+#SBATCH --ntasks-per-node=1               # 40 CPU allocation per Task
+#SBATCH --partition=sixhour            # Name of the Slurm partition used
+#SBATCH --chdir=/home/d669d153/work/Wphyllowgs/treemix     # Set working d$
+#SBATCH --mem-per-cpu=5gb           # memory requested
+#SBATCH --time=200
+
+#convert vcf into treemix file
+#/home/d669d153/work/stacks-2.41/populations --in_vcf phyllo.autosomal.filtered.1kbthinned.SNPs.vcf.gz -O . --treemix -M treemix.popmap.txt
+#remove stacks header
+#echo "$(tail -n +2 phyllo.autosomal.filtered.1kbthinned.SNPs.p.treemix)" > phyllo.autosomal.filtered.1kbthinned.SNPs.p.treemix
+#gzip file for input to treemix
+#gzip phyllo.autosomal.filtered.1kbthinned.SNPs.p.treemix
+
+#run treemix with m0
+/panfs/pfs.local/work/bi/bin/treemix-1.13/src/treemix -i phyllo.autosomal.filtered.1kbthinned.SNPs.p.treemix.gz -root PNG -o treem0
+
+#add 1 migration edge
+/panfs/pfs.local/work/bi/bin/treemix-1.13/src/treemix -i phyllo.autosomal.filtered.1kbthinned.SNPs.p.treemix.gz -m 1 -g treem0.vertices.gz treem0.edges.gz -o treem1
+
+#add 2 migration edges
+/panfs/pfs.local/work/bi/bin/treemix-1.13/src/treemix -i phyllo.autosomal.filtered.1kbthinned.SNPs.p.treemix.gz -m 1 -g treem1.vertices.gz treem1.edges.gz -o treem2
+
+#add 3 migration edges
+/panfs/pfs.local/work/bi/bin/treemix-1.13/src/treemix -i phyllo.autosomal.filtered.1kbthinned.SNPs.p.treemix.gz -m 1 -g treem2.vertices.gz treem2.edges.gz -o treem3
+
+
+echo"
+The popmap looks like this:
+P_amoenus_279.sorted	amoenus
+P_amoenus_36181.sorted	amoenus
+P_amoenus_36184.sorted	amoenus
+P_amoenus_36208.sorted	amoenus
+P_amoenus_DOT251.sorted	amoenus
+P_becki_218146.sorted	Isabel
+P_becki_227294.sorted	Malaita
+P_becki_32802.sorted	Guadalcanal
+P_becki_32814.sorted	Guadalcanal
+P_giulianettii_16583.sorted	PNG
+P_giulianettii_27874.sorted	PNG
+P_makirensis_35004.sorted	Makira
+P_makirensis_35012.sorted	Makira
+P_pallescens_220.sorted	Kolombangara
+P_pallescens_266.sorted	Kolombangara
+P_pallescens_36191.sorted	Kolombangara
+P_pallescens_36192.sorted	Kolombangara
+P_pallescens_36200.sorted	Kolombangara
+"
+```
+
+Then, copy that entire directory onto your local machine.
+
+### Now visualize the resulting trees
+```{r}
+#source plotting functions that are distributed with treemix
+source("~/Downloads/plotting_funcs.R")
+
+#0 edge
+plot_tree("~/Desktop/phyllo.wgs/treemix/treem0")
+#1 edge
+plot_tree("~/Desktop/phyllo.wgs/treemix/treem1", plus = 0.02, arrow=.1, ybar = 0, scale=F, lwd=1.5)
+#2 edges
+plot_tree("~/Desktop/phyllo.wgs/treemix/treem2")
+#3 edges
+plot_tree("~/Desktop/phyllo.wgs/treemix/treem3")
+```
+
+
+### And assess how many edges are needed to explain the variance observed in the SNP dataset
+```{r}
+#plot to see how much variance is explained by each edge
+m=NULL
+for(i in 0:3){
+  m[i+1] <- get_f(paste0("~/Desktop/phyllo.wgs/treemix/treem",i))
+}
+
+#print variance explained by each tree with 0,1,2,3 mig edges
+m
+#plot
+plot(seq(0,3),m,pch="*",cex=2,col="blue", type="b",xlab="migration edge number", ylab="% explained variance")
+```
+
