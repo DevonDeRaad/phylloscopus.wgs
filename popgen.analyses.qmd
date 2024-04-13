@@ -1,0 +1,162 @@
+---
+title: "explore.phyllo.patterns"
+format: html
+toc: true
+toc-title: Document Contents
+number-sections: true
+embed-resources: true
+---
+
+### read in vcf
+```{r}
+library(vcfR)
+library(SNPfiltR)
+library(adegenet)
+library(StAMPP)
+library(ggplot2)
+v.auto<-read.vcfR("~/Desktop/phyllo.wgs/phyllo.autosomal.filtered.1kbthinned.SNPs.vcf.gz")
+v.z<-read.vcfR("~/Desktop/phyllo.wgs/phyllo.Z.filtered.1kbthinned.SNPs.vcf.gz")
+
+```
+
+### Make a splitstree
+```{r}
+#check to make sure there's no missing data in vcf
+table(extract.gt(v.auto), useNA = "always")
+
+#check to make sure there's no missing data in vcf
+table(extract.gt(v.z), useNA = "always")
+
+#convert vcfR to genlight
+gen<-vcfR2genlight(v.z)
+#check sample names (remember the splitstree gui won't let you visualize more than 10 characters in a sample name, and all sample names must be unique)
+gen@ind.names
+#edit your sample names to fit this criteria
+gen@ind.names<-gsub("P_amoenus_","amo", gen@ind.names)
+gen@ind.names<-gsub("P_becki_","beck", gen@ind.names)
+gen@ind.names<-gsub("P_giulianettii_","guil", gen@ind.names)
+gen@ind.names<-gsub("P_pallescens_","pall", gen@ind.names)
+gen@ind.names<-gsub("P_makirensis_","mak", gen@ind.names)
+
+#assign sample names as populations (population assignments are a requirement for the stampp functions, but can be arbitrary here because we want a pairwise divergence matrix among all samples, not samples assigned populations)
+pop(gen)<-gen@ind.names
+#make pairwise divergence matrix among all samples
+sample.div <- stamppNeisD(gen, pop = FALSE)
+
+#export for splitstree
+#stamppPhylip(distance.mat=sample.div, file="~/Desktop/phyllo.wgs/z.males.only.splits.txt")
+
+#open this file using the splitstree GUI.
+```
+
+### Now repeat for the autosomes
+```{r}
+#check to make sure there's no missing data in vcf
+table(extract.gt(v.auto), useNA = "always")
+
+#check to make sure there's no missing data in vcf
+table(extract.gt(v.z), useNA = "always")
+
+#convert vcfR to genlight
+gen<-vcfR2genlight(v.auto)
+#check sample names (remember the splitstree gui won't let you visualize more than 10 characters in a sample name, and all sample names must be unique)
+gen@ind.names
+#edit your sample names to fit this criteria
+gen@ind.names<-gsub("P_amoenus_","amo", gen@ind.names)
+gen@ind.names<-gsub("P_becki_","beck", gen@ind.names)
+gen@ind.names<-gsub("P_giulianettii_","guil", gen@ind.names)
+gen@ind.names<-gsub("P_pallescens_","pall", gen@ind.names)
+gen@ind.names<-gsub("P_makirensis_","mak", gen@ind.names)
+
+#assign sample names as populations (population assignments are a requirement for the stampp functions, but can be arbitrary here because we want a pairwise divergence matrix among all samples, not samples assigned populations)
+pop(gen)<-gen@ind.names
+#make pairwise divergence matrix among all samples
+sample.div <- stamppNeisD(gen, pop = FALSE)
+
+#export for splitstree
+#stamppPhylip(distance.mat=sample.div, file="~/Desktop/phyllo.wgs/autosomal.723K.splits.txt")
+
+#open this file using the splitstree GUI.
+```
+### run SMNF on Z
+```{r}
+library(LEA)
+#remove the outgroup sample
+sub.v.z<-v.z[,c(1:9,11:16)]
+table(extract.gt(sub.v.z), useNA = "always")
+geno<-extract.gt(sub.v.z)
+geno[geno == "0/0"]<-0
+geno[geno == "0/1"]<-1
+geno[geno == "1/1"]<-2
+#geno[geno == "NA"]<-9
+
+geno[1:10,1:10]
+
+write.table(geno, "~/Desktop/phyllo.z.geno", col.names = FALSE, row.names = FALSE, sep = "", quote=FALSE)
+
+#test_snmf <- LEA::snmf(input.file = "~/Desktop/phyllo.z.geno",K = 4,entropy = TRUE,project = "new",alpha = 20000, repetitions = 10)
+test_snmf<-load.snmfProject("~/Desktop/phyllo.z.snmfProject")
+
+plot(test_snmf, cex = 1.2, col = "lightblue", pch = 19)
+# get the cross-entropy of the 5 runs for K = 3
+ce <- LEA::cross.entropy(test_snmf, K = 4)
+ce
+# select the run with the lowest cross-entropy for K = 2
+best_run <- which.min(ce)
+q_mat <- LEA::Q(test_snmf, K = 4, run = best_run) 
+
+#colnames(q_mat) <- paste0("P", 1:2)
+colnames(sub.v.z@gt)[-1]
+#q_mat
+#plot each run
+barplot(t(q_mat), col=c("white","grey","black","green"), ylab="Ancestry", border="black")
+#tune alpha based on mean ce
+mean(ce)
+
+#reorder to match the order and colors you want
+barplot(t(q_mat)[,c(6:14,1:5)], col=c("#CC6677","#88CCEE","black","#117733"), ylab="Ancestry", border="black")
+
+```
+
+
+### repeat SMNF on autosomes
+```{r}
+colnames(v.auto@gt)
+#remove outgroup
+sub.v.auto<-v.auto[,c(1:10,13:19)]
+table(extract.gt(sub.v.auto), useNA = "always")
+geno<-extract.gt(sub.v.auto)
+geno[geno == "0/0"]<-0
+geno[geno == "0/1"]<-1
+geno[geno == "1/1"]<-2
+#geno[geno == "NA"]<-9
+
+geno[1:10,1:10]
+
+write.table(geno, "~/Desktop/phyllo.auto.geno", col.names = FALSE, row.names = FALSE, sep = "", quote=FALSE)
+
+#test_snmf <- LEA::snmf(input.file = "~/Desktop/phyllo.auto.geno",K = 5,entropy = TRUE,project = "new",alpha = 35000, repetitions = 10)
+test_snmf<-load.snmfProject("~/Desktop/phyllo.auto.snmfProject")
+
+plot(test_snmf, cex = 1.2, col = "lightblue", pch = 19)
+# get the cross-entropy of the 5 runs for K = 3
+ce <- LEA::cross.entropy(test_snmf, K = 5)
+ce
+# select the run with the lowest cross-entropy for K = 2
+best_run <- which.min(ce)
+q_mat <- LEA::Q(test_snmf, K = 5, run = best_run) 
+
+#colnames(q_mat) <- paste0("P", 1:2)
+colnames(sub.v.auto@gt)[-1]
+#q_mat
+#plot each run
+barplot(t(q_mat), col=c("white","grey","black","green"), ylab="Ancestry", border="black")
+
+#reorder to match the order and colors you want
+barplot(t(q_mat)[,c(6:11,16:12,1:5)], col=c("#CC6677","#DDCC77","#117733","black","#88CCEE"), ylab="Ancestry", border="black")
+
+t(q_mat)
+colnames(sub.v.auto@gt)[-1][c(6:11,16:12,1:5)]
+```
+
+
