@@ -1,0 +1,186 @@
+---
+title: "explore.phyllo.genetree.patterns"
+format: html
+toc: true
+toc-title: Document Contents
+number-sections: true
+embed-resources: true
+---
+
+### Load libraries
+```{r}
+library(ape)
+library(phangorn)
+library(spatstat)
+library(spatstat.geom)
+```
+
+### plot overlaid gene trees
+```{r}
+##read in Z linked gene trees
+#x<-phytools::read.newick("~/Desktop/phyllo.wgs/Z.100kb.ml_best.trees")
+#
+##root each one on the PNG group
+#for(i in 1:752){
+#  x[[i]]<-root(x[[i]],"P_giulianettii_16583.sorted")
+#}
+#
+##make each one ultrametric
+#for(i in 1:752){
+#  x[[i]]<-chronos(x[[i]])
+#}
+
+#save a backup of the ultrametric trees which took forever to generate
+#write.tree(x,file="~/Desktop/phyllo.wgs/Z.100kb.rooted.ultrametric.trees")
+#read in from backup
+
+#all of the above lines were run once and then commented out because they were very slow
+#now we can just start here from these saved files
+x<-read.tree(file="~/Desktop/phyllo.wgs/Z.100kb.rooted.ultrametric.trees")
+
+#plot overlaid
+#densiTree(x, type="cladogram",nodes="intermediate", alpha = .1, consensus = x[[1]]$tip.label[c(11,6:10,12:15,1:5)])
+densiTree(x, type="cladogram",nodes="intermediate", alpha = .05, consensus = x[[1]]$tip.label[c(1:5,6:9,13:14,12,10,11,15)])
+
+#manually move the branch leading to the outgroup behind the tree for easier viewing
+for(i in 1:752){
+  x[[i]]$edge.length[x[[i]]$edge.length==1]<- -10
+}
+
+#replot
+densiTree(x, type="cladogram",nodes="intermediate", alpha = .2, consensus = x[[1]]$tip.label[c(1:5,6:9,13:14,12,10,11,15)])
+
+#how often are all pallescens and amoenus samples monophyletic
+z.mono<-c()
+for(i in 1:752){
+z.mono[i]<-(is.monophyletic(x[[i]],x[[1]]$tip.label[c(1:9)]))
+}
+table(z.mono)
+#calc proportion 533/752
+table(z.mono)[2]/sum(table(z.mono))
+
+#how often are all poliocephalus samples monophyletic
+z.mono<-c()
+for(i in 1:752){
+  z.mono[i]<-(is.monophyletic(x[[i]],x[[1]]$tip.label[c(6:14)]))
+}
+table(z.mono)
+#calc proportion 137/752
+table(z.mono)[2]/sum(table(z.mono))
+
+```
+
+
+### redo this with autosomal trees
+```{r}
+#read in autosomal gene trees
+#y<-phytools::read.newick("~/Desktop/phyllo.wgs/auto.100kb.ml_best.trees")
+
+#remove trees where outgroup is not monophyletic
+#for(i in 1:8376){
+#  z[i]<-is.monophyletic(y[[i]],c("P_giulianettii_16583.sorted","P_giulianettii_27874.sorted"))
+#}
+#table(z)
+#y<-y[z]
+#y
+
+#root each one on the PNG group
+#for(i in 1:8318){
+#  y[[i]]<-root(y[[i]],c("P_giulianettii_16583.sorted","P_giulianettii_27874.sorted"))
+#}
+
+#make each one ultrametric
+#for(i in 1:8318){
+#  y[[i]]<-chronos(y[[i]])
+#}
+#save a backup of the ultrametric trees which took forever to generate
+#write.tree(y,file="~/Desktop/phyllo.wgs/auto.100kb.rooted.ultrametric.trees")
+#read in from backup
+
+#all of the above lines were run once and then commented out because they were very slow
+#now we can just start here from these saved files
+y<-read.tree(file="~/Desktop/phyllo.wgs/auto.100kb.rooted.ultrametric.trees")
+
+#plot overlaid
+densiTree(y, type="cladogram",nodes="intermediate", alpha = .01, 
+          consensus = y[[1]]$tip.label[c(10,4:1,6:9,5,16:14,12,11,13,17:18)])
+
+#manually move the branch leading to the outgroup behind the tree for easier viewing
+for(i in 1:8318){
+  y[[i]]$edge.length[y[[i]]$edge.length==1]<- -10
+}
+
+#replot
+densiTree(y, type="cladogram",nodes="intermediate", alpha = .01, 
+          consensus = y[[1]]$tip.label[c(10,4:1,6:9,5,16:14,12,11,13,17:18)])
+
+#how often are all pallescens and amoenus samples monophyletic
+mono<-c()
+for(i in 1:8318){
+  mono[i]<-(is.monophyletic(y[[i]],y[[1]]$tip.label[c(1:10)]))
+}
+table(mono)
+#calc proportion 5683/8318
+table(mono)[2]/sum(table(mono))
+
+#how often are all poliocephalus samples monophyletic
+mono<-c()
+for(i in 1:8318){
+  mono[i]<-(is.monophyletic(y[[i]],y[[1]]$tip.label[c(5:9,11:16)]))
+}
+table(mono)
+#calc proportion 747/8318
+table(mono)[2]/sum(table(mono))
+
+#how often are all amoenus and non-pallescens poliocephalus samples monophyletic
+mono<-c()
+for(i in 1:8318){
+  mono[i]<-(is.monophyletic(y[[i]],y[[1]]$tip.label[c(1:4,10:16)]))
+}
+table(mono)
+#calc proportion 196/8318
+table(mono)[2]/sum(table(mono))
+
+#test whether Z chrom is significantly enriched for monophyletic P. poliocephalus topologies
+prop.test(x = c(137, 752), n = c(747, 8318))
+
+```
+
+### Try drawing gene tree topologies across the genome
+```{r}
+co <- colourmap(rainbow(100), breaks=seq(-1,1,length=101))
+plot(co)
+mono.col<-mono
+mono.col[mono.col == FALSE]<-"red"
+mono.col[mono.col == TRUE]<-"green"
+co <- colourmap(mono.col, breaks=seq(0,8318,by=1))
+#plot entire autosomal genome
+plot(co)
+
+z.mono.col<-z.mono
+z.mono.col[z.mono.col == FALSE]<-"red"
+z.mono.col[z.mono.col == TRUE]<-"green"
+co <- colourmap(z.mono.col, breaks=seq(0,752,by=1))
+#plot entire Z chromosome
+plot(co)
+
+#plot just the first chromosome
+mono.col<-mono[1:1053]
+mono.col[mono.col == FALSE]<-"red"
+mono.col[mono.col == TRUE]<-"green"
+co <- colourmap(mono.col, breaks=seq(0,1053,by=1))
+plot(co)
+table(mono.col)
+73/980
+
+#plot just chrom 1A (122128159-203661208)
+mono.col<-mono[1053:1709]
+mono.col[mono.col == FALSE]<-"red"
+mono.col[mono.col == TRUE]<-"green"
+co <- colourmap(mono.col, breaks=seq(0,657,by=1))
+plot(co)
+table(mono.col)
+73/980
+
+```
+
