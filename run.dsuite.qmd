@@ -134,3 +134,9 @@ module load python
 knitr::include_graphics("~/Desktop/two.png")
 ```
 
+
+### Add in Z chromosome investigation
+```{bash}
+
+```
+
